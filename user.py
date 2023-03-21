@@ -4,6 +4,7 @@ class User:
     def __init__(self, username, user_id):
         self.username = username
         self.id = user_id
+        self.file_path = ""
         self.check_folder()
     
     def check_folder(self):
@@ -22,6 +23,3 @@ class User:
     
     def get_file_path(self):
         return self.file_path
-    
-    def set_file_path(self, path):
-        self.file_path = path
