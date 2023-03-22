@@ -22,32 +22,37 @@ def set_user(username, user_id):
     user = User(username, user_id)
     log(f'NEW USER | Username: {user.get_username()}, User_Id: {user.get_id()}')
 
-# def read(user):
-#     print(user.file_path)
-#     with open(user.file_path, 'r') as content:
-#         return content.read()
-
-@bot.message_handler(commands=['start', 'help', 'id', 'username', 'today', 'tomorrow', 'user']) # Accede alla funzione sottostante quando viene inviato un comando
+@bot.message_handler(commands=['start', 'help', 'id', 'username', 'today', 'tomorrow', 'read']) # Accede alla funzione sottostante quando viene inviato un comando
 def handle_command(message):
+
     if message.text == '/start':
         set_user(message.from_user.username, message.from_user.id) # crea l'utenza
         bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nPer poter continuare carica il file .csv che contiene il tuo calendaro.\n\nDigita /help per saperne di più su come formattare il suo file csv.")
+
     elif message.text == '/help':
         bot.send_message(message.chat.id, "Ci scusiamo ma il messaggio è in sviluppo.")
+
     elif message.text == '/id':
         bot.send_message(message.chat.id, f"Your id is: {user.get_id()}")
+
     elif message.text == '/username':
         bot.send_message(message.chat.id, f"Your username is: {user.get_username()}")
-    # elif message.text == '/today':
-    #     locale.setlocale(locale.LC_TIME, "it_IT")
-    #     date_time_str = time.strftime("%A, %B %d, %Y")
-    #     bot.send_message(message.chat.id, f"Data: {date_time_str}")
-    # elif message.text == '/tomorrow':
-    #     locale.setlocale(locale.LC_TIME, "it_IT")
-    #     date_time_str = time.strftime("%A, %B %d, %Y")
-    #     bot.send_message(message.chat.id, f"Data: {date_time_str}")
-    elif message.text == '/user':
-        return True
+
+    elif message.text == '/today':
+        locale.setlocale(locale.LC_TIME, "it_IT")
+        date_time_str = time.strftime("%A, %B %d, %Y")
+        bot.send_message(message.chat.id, f"Data: {date_time_str}")
+
+    elif message.text == '/tomorrow':
+        locale.setlocale(locale.LC_TIME, "it_IT")
+        now = datetime.now() + timedelta(1)
+        date_time_str = now.strftime("%A, %B %d, %Y")
+        bot.send_message(message.chat.id, f"Data: {date_time_str}")
+
+    elif message.text == '/read':
+        with open(user.file_path, 'r') as new_file:
+            print(new_file.read())
+
     else:
         bot.send_message(message.chat.id, "Mi dispiace ma non credo di aver capito.\nDigita /start per iniziare.")
 
@@ -59,15 +64,18 @@ def echo_all(message):
 @bot.message_handler(content_types=['document']) # list relevant content types
 def addfile(message):
     file_name = message.document.file_name # nome del file
-    file_info = bot.get_file(message.document.file_id) # {file_id, file_unique_id, file_size, file_path}
-    downloaded_file = bot.download_file(file_info.file_path) # contenuto del file
-    user.file_path = f"./Files/{user.get_id()}/{file_name}"
+    if(file_name[len(file_name)-4:len(file_name)] == ".csv"):
+        file_info = bot.get_file(message.document.file_id) # {file_id, file_unique_id, file_size, file_path}
+        downloaded_file = bot.download_file(file_info.file_path) # contenuto del file
+        user.file_path = f"./Files/{user.get_id()}/{file_name}"
 
-    with open(user.file_path, 'wb') as new_file:
-        new_file.write(downloaded_file)
+        with open(user.file_path, 'wb') as new_file:
+            new_file.write(downloaded_file)
 
-    bot.reply_to(message, "File salvato correttamente!")
-    log(f'NEW FILE | Username: {user.get_username()}, User_Id: {user.get_id()}')
+        bot.reply_to(message, "File salvato correttamente!")
+        log(f'NEW FILE | Username: {user.get_username()}, User_Id: {user.get_id()}')
+    else:
+        bot.reply_to(message, "ATTENZIONE! Il file deve essere in formato .csv!\nPer saperne di più /help")
 
 log("BOT START RUNNING...")
 bot.polling()
