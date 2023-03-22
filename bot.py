@@ -5,6 +5,7 @@ from dateutil.parser import parse
 import time
 import locale
 import os
+import io
 import telebot
 
 load_dotenv()
@@ -12,9 +13,8 @@ token = os.getenv("TOKEN")
 
 bot = telebot.TeleBot(token)
 
-print(type(datetime.now()))
-
 def log(message):
+    print(message)
     log_path = "./Files/log_activities.log"
     with open(log_path, 'a') as new_file:
         new_file.write(f'{message}\n')
@@ -30,7 +30,6 @@ def is_date(string, fuzzy=False):
         return True
 
     except ValueError:
-        print("false")
         return False
 
 @bot.message_handler(commands=['start', 'help', 'id', 'today', 'tomorrow', 'ondev']) # Accede alla funzione sottostante quando viene inviato un comando
@@ -38,11 +37,11 @@ def handle_command(message):
     if message.text == '/start':
         set_user(message.from_user.username, message.from_user.id) # crea l'utenza
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
-        bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nAl momento è possibile confrontare un solo calendario gestito da remoto, ma sto lavorando per fare in modo che al più presto potrai gestire il calendario preferisci.\n\nDigita:\n\n/today per il programma di oggi\n/tomorrow per il programma di domani.\n<b>dd-mm-yyyy</b> per il programma del giorno che vuoi.", parse_mode='HTML')
+        bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nAl momento è possibile confrontare un solo calendario gestito da remoto, ma sto lavorando per fare in modo che al più presto potrai gestire il calendario che preferisci.\n\nDigita:\n\n/today per il programma di oggi\n/tomorrow per il programma di domani.\n<b>dd-mm-yyyy</b> per il programma del giorno che vuoi.", parse_mode='HTML')
 
     elif message.text == '/help':
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
-        bot.send_message(message.chat.id, text="Eccomi, questi sono i comandi a cui posso rispondere:\n\n/start - avvia il bot\n/help - lista dei comandi\n/id - il tuo id\n/today - programma di oggi\n/tomorrow - programma di domani\n<b>dd-mm-yyyy</b> - programma data a scelta", parse_mode= 'HTML')
+        bot.send_message(message.chat.id, text="Questi sono i comandi a cui posso rispondere:\n\n/start - avvia il bot\n/help - lista dei comandi\n/id - il tuo id\n/today - programma di oggi\n/tomorrow - programma di domani\n<b>dd-mm-yyyy</b> - programma data a scelta", parse_mode= 'HTML')
 
     elif message.text == '/id':
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
@@ -61,7 +60,7 @@ def handle_command(message):
         with open("./Files/calendar.csv", 'r') as new_file:
             list = new_file.read()
         new_list = []
-        for item in list.split("\n"):
+        for item in str(list).split("\n"):
             new_list.append(item.split(";"))
 
         for el in new_list:
@@ -93,31 +92,34 @@ def handle_command(message):
 @bot.message_handler(func=lambda m: True) # Accede alla funzione sottostante per tutti i messaggi inviati
 def echo_all(message):
     log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
-    if(is_date(str(message.text))):
+    if(len(message.text) < 5):
+        bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova!")
+    else:
+	    if(is_date(str(message.text))):
 
-        split = message.text.split("-")
-        day = int(split[0])
-        month = int(split[1])
-        year = int(split[2])
+	        split = message.text.split("-")
+	        day = int(split[0])
+	        month = int(split[1])
+	        year = int(split[2])
 
 
-        locale.setlocale(locale.LC_TIME, "it_IT")
-        now = datetime(year, month, day)
-        date_time_str = now.strftime("%A, %B %d, %Y")
+	        locale.setlocale(locale.LC_TIME, "it_IT@euro")
+	        now = datetime(year, month, day)
+	        date_time_str = now.strftime("%A, %B %d, %Y")
 
-        with open("./Files/calendar.csv", 'r') as new_file:
-            list = new_file.read()
-        new_list = []
-        for item in list.split("\n"):
-            new_list.append(item.split(";"))
+	        with open("./Files/calendar.csv", 'r') as new_file:
+	            list = new_file.read()
+	        new_list = []
+	        for item in list.split("\n"):
+	            new_list.append(item.split(";"))
 
-        for el in new_list:
-            if(date_time_str in el[0]):
-                response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
-                bot.send_message(message.chat.id, response)
-                return True
-        bot.send_message(message.chat.id, "Data non trovata")
-    bot.send_message(message.chat.id, "Credo di non aver capito...\nAl momento accetto come testo solo date con questo formato <b>dd-mm-yyyy</b>", parse_mode='HTML')
+	        for el in new_list:
+	            if(date_time_str in el[0]):
+	                response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
+	                bot.send_message(message.chat.id, response)
+	                return True
+	    bot.send_message(message.chat.id, "Data non trovata")
+    #bot.send_message(message.chat.id, "Credo di non aver capito...\nAl momento accetto come testo solo date con questo formato <b>dd-mm-yyyy</b>", parse_mode='HTML')
     # bot.send_message(message.chat.id, "Mi dispiace ma in questo momento sono in grado di rispondere solo ai comandi /help.")
 
 @bot.message_handler(content_types=['document']) # list relevant content types
