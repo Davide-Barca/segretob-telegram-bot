@@ -1,4 +1,4 @@
-# Segretob Bot
+# [Segretob Bot](https://t.me/segretob_bot)
 ## Required python modules
 ```
 pip install python-dotenv
