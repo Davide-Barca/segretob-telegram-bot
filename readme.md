@@ -16,6 +16,7 @@ TOKEN="your telegram bot token"
 
 ## Bot Description
 This telegram bot (made by: Davide Barca) was created for the "Cloud administrator & Security engineer" class.
+
 **What the bot can do?**
 - The bot tell you which course you have **today**, where, when and whit whom
 - The bot tell you which course you have **tomorrow**, where, when and whit whom
