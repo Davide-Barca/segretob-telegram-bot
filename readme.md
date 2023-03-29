@@ -4,6 +4,7 @@
 pip install python-dotenv
 pip install pyTelegrambotAPI
 pip install python-dateutil
+pip install parse
 ```
 
 ## Setup
