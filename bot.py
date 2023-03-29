@@ -95,30 +95,37 @@ def echo_all(message):
     if(len(message.text) < 5):
         bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova!")
     else:
-	    if(is_date(str(message.text))):
+        if(is_date(str(message.text))):
+            if(message.text[2] == "-" and message.text[5] == "-"):
+                split = message.text.split("-")
+            elif(message.text[2] == "/" and message.text[5] == "/"):
+                split = message.text.split("/")
+            else:
+                bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova a scrivere la data separata dal carattere - o /")
+                return False
+                
 
-	        split = message.text.split("-")
-	        day = int(split[0])
-	        month = int(split[1])
-	        year = int(split[2])
+            day = int(split[0])
+            month = int(split[1])
+            year = int(split[2])
 
 
-	        locale.setlocale(locale.LC_TIME, "it_IT@euro")
-	        now = datetime(year, month, day)
-	        date_time_str = now.strftime("%A, %B %d, %Y")
+            locale.setlocale(locale.LC_TIME, "it_IT@euro")
+            now = datetime(year, month, day)
+            date_time_str = now.strftime("%A, %B %d, %Y")
 
-	        with open("./Files/calendar.csv", 'r') as new_file:
-	            list = new_file.read()
-	        new_list = []
-	        for item in list.split("\n"):
-	            new_list.append(item.split(";"))
-
-	        for el in new_list:
-	            if(date_time_str in el[0]):
-	                response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
-	                bot.send_message(message.chat.id, response)
-	                return True
-	    bot.send_message(message.chat.id, "Data non trovata")
+            with open("./Files/calendar.csv", 'r') as new_file:
+                list = new_file.read()
+            new_list = []
+            for item in list.split("\n"):
+                new_list.append(item.split(";"))
+                    
+            for el in new_list:
+                if(date_time_str in el[0]):
+                    response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
+                    bot.send_message(message.chat.id, response)
+                return True
+        bot.send_message(message.chat.id, "Data non trovata")
     #bot.send_message(message.chat.id, "Credo di non aver capito...\nAl momento accetto come testo solo date con questo formato <b>dd-mm-yyyy</b>", parse_mode='HTML')
     # bot.send_message(message.chat.id, "Mi dispiace ma in questo momento sono in grado di rispondere solo ai comandi /help.")
 
