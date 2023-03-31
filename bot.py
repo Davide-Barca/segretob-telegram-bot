@@ -31,11 +31,29 @@ def is_date(string, fuzzy=False):
 
     except ValueError:
         return False
+    
+def load_calendar():
+    with open("./Files/calendar.csv", 'rb') as new_file:
+        list = new_file.read().decode('utf8')
+    global new_list
+    new_list = []
+    for item in str(list).split("\n"):
+        new_list.append(item.split(";"))
+    print("loaded")
+
+def search_date(date, message):
+    for el in new_list:
+        if(date in el[0]):
+            response = f"In Data: {date} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
+            bot.send_message(message.chat.id, response)
+            return True
+    bot.send_message(message.chat.id, "Data non trovata on search")
 
 @bot.message_handler(commands=['start', 'help', 'id', 'today', 'tomorrow', 'ondev']) # Accede alla funzione sottostante quando viene inviato un comando
 def handle_command(message):
     if message.text == '/start':
         set_user(message.from_user.username, message.from_user.id) # crea l'utenza
+        load_calendar()
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nAl momento è possibile confrontare un solo calendario gestito da remoto, ma sto lavorando per fare in modo che al più presto potrai gestire il calendario che preferisci.\n\nDigita:\n\n/today per il programma di oggi\n/tomorrow per il programma di domani.\n<b>dd-mm-yyyy</b> per il programma del giorno che vuoi.", parse_mode='HTML')
 
@@ -55,36 +73,14 @@ def handle_command(message):
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
         locale.setlocale(locale.LC_TIME, "it_IT")
         date_time_str = time.strftime("%A, %B %d, %Y")
-        # bot.send_message(message.chat.id, f"Data: {date_time_str}")
-
-        with open("./Files/calendar.csv", 'r') as new_file:
-            list = new_file.read()
-        new_list = []
-        for item in str(list).split("\n"):
-            new_list.append(item.split(";"))
-
-        for el in new_list:
-            if(date_time_str in el[0]):
-                response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
-                bot.send_message(message.chat.id, response)
+        search_date(date_time_str, message)
 
     elif message.text == '/tomorrow':
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
         locale.setlocale(locale.LC_TIME, "it_IT")
         now = datetime.now() + timedelta(1)
         date_time_str = now.strftime("%A, %B %d, %Y")
-        # bot.send_message(message.chat.id, f"Data: {date_time_str}")
-
-        with open("./Files/calendar.csv", 'r') as new_file:
-            list = new_file.read()
-        new_list = []
-        for item in list.split("\n"):
-            new_list.append(item.split(";"))
-
-        for el in new_list:
-            if(date_time_str in el[0]):
-                response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
-                bot.send_message(message.chat.id, response)
+        search_date(date_time_str, message)
     else:
         log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Mi dispiace ma non credo di aver capito.\nDigita /start per iniziare.")
@@ -110,21 +106,13 @@ def echo_all(message):
             year = int(split[2])
 
 
-            locale.setlocale(locale.LC_TIME, "it_IT@euro")
+            locale.setlocale(locale.LC_TIME, "it_IT")
             now = datetime(year, month, day)
             date_time_str = now.strftime("%A, %B %d, %Y")
 
-            with open("./Files/calendar.csv", 'r') as new_file:
-                list = new_file.read()
-            new_list = []
-            for item in list.split("\n"):
-                new_list.append(item.split(";"))
-                    
-            for el in new_list:
-                if(date_time_str in el[0]):
-                    response = f"In Data: {date_time_str} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
-                    bot.send_message(message.chat.id, response)
-                return True
+            search_date(date_time_str, message)
+            return True
+        
         bot.send_message(message.chat.id, "Data non trovata")
     #bot.send_message(message.chat.id, "Credo di non aver capito...\nAl momento accetto come testo solo date con questo formato <b>dd-mm-yyyy</b>", parse_mode='HTML')
     # bot.send_message(message.chat.id, "Mi dispiace ma in questo momento sono in grado di rispondere solo ai comandi /help.")
