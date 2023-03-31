@@ -19,10 +19,10 @@ def log(message):
     with open(log_path, 'a') as new_file:
         new_file.write(f'{message}\n')
 
-def set_user(username, user_id):
-    global user
-    user = User(username, user_id)
-    log(f'NEW USER | Username: {user.get_username()}, User_Id: {user.get_id()}')
+# def set_user(username, user_id):
+#     global user
+#     user = User(username, user_id)
+#     log(f'NEW USER | Username: {message.from_user.username}, User_Id: {message.from_user.id}')
 
 def is_date(string, fuzzy=False):
     try:
@@ -47,47 +47,48 @@ def search_date(date, message):
             response = f"In Data: {date} è previsto:\nMateria: {el[6]} \n Docente: {el[7]} \n Orario: dalle {el[2]} alle {el[3]} \n Aula {el[1]}"
             bot.send_message(message.chat.id, response)
             return True
-    bot.send_message(message.chat.id, "Data non trovata on search")
+    bot.send_message(message.chat.id, "Data non trovata")
 
 @bot.message_handler(commands=['start', 'help', 'id', 'today', 'tomorrow', 'ondev']) # Accede alla funzione sottostante quando viene inviato un comando
 def handle_command(message):
     if message.text == '/start':
-        set_user(message.from_user.username, message.from_user.id) # crea l'utenza
+        # set_user(message.from_user.username, message.from_user.id) # crea l'utenza
+        print(message.from_user.id)
         load_calendar()
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nAl momento è possibile confrontare un solo calendario gestito da remoto, ma sto lavorando per fare in modo che al più presto potrai gestire il calendario che preferisci.\n\nDigita:\n\n/today per il programma di oggi\n/tomorrow per il programma di domani.\n<b>dd-mm-yyyy</b> per il programma del giorno che vuoi.", parse_mode='HTML')
 
     elif message.text == '/help':
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, text="Questi sono i comandi a cui posso rispondere:\n\n/start - avvia il bot\n/help - lista dei comandi\n/id - il tuo id\n/today - programma di oggi\n/tomorrow - programma di domani\n<b>dd-mm-yyyy</b> - programma data a scelta", parse_mode= 'HTML')
 
     elif message.text == '/id':
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
-        bot.send_message(message.chat.id, f"Your id is: {user.get_id()}")
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
+        bot.send_message(message.chat.id, f"Your id is: {message.from_user.id}")
     
     elif message.text == '/ondev':
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Funzioni in fase di sviluppo:\n\n1 ~ Implementazione notifica giornaliera\n2 ~ Gestione di un calendario personalizzato\n3 ~ Possibilità di inserire la data in qualsiasi formato", parse_mode='HTML')
 
     elif message.text == '/today':
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         locale.setlocale(locale.LC_TIME, "it_IT")
         date_time_str = time.strftime("%A, %B %d, %Y")
         search_date(date_time_str, message)
 
     elif message.text == '/tomorrow':
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         locale.setlocale(locale.LC_TIME, "it_IT")
         now = datetime.now() + timedelta(1)
         date_time_str = now.strftime("%A, %B %d, %Y")
         search_date(date_time_str, message)
     else:
-        log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+        log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Mi dispiace ma non credo di aver capito.\nDigita /start per iniziare.")
 
 @bot.message_handler(func=lambda m: True) # Accede alla funzione sottostante per tutti i messaggi inviati
 def echo_all(message):
-    log(f'Message | Username: {user.get_username()}, User_Id: {user.get_id()}, Text: {str(message.text)}')
+    log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
     if(len(message.text) < 5):
         bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova!")
     else:
@@ -123,13 +124,13 @@ def addfile(message):
     if(file_name[len(file_name)-4:len(file_name)] == ".csv"):
         file_info = bot.get_file(message.document.file_id) # {file_id, file_unique_id, file_size, file_path}
         downloaded_file = bot.download_file(file_info.file_path) # contenuto del file
-        user.file_path = f"./Files/{user.get_id()}/{file_name}"
+        user_file_path = f"./Files/{message.from_user.id}/{file_name}"
 
-        with open(user.file_path, 'wb') as new_file:
+        with open(user_file_path, 'wb') as new_file:
             new_file.write(downloaded_file)
 
         bot.reply_to(message, "File salvato correttamente!\n\n<i>Questa funzione non è ancora attiva!</i>", parse_mode="HTML")
-        log(f'NEW FILE | Username: {user.get_username()}, User_Id: {user.get_id()}')
+        log(f'NEW FILE | Username: {message.from_user.username}, User_Id: {message.from_user.id}')
     else:
         bot.reply_to(message, "ATTENZIONE! Il file deve essere in formato .csv!\n\n<i>Facciamo notare che questa funzione non è ancora attiva!</i>", parse_mode="HTML")
 
