@@ -95,7 +95,7 @@ def echo_all(message):
             elif(message.text[2] == "/" and message.text[5] == "/"):
                 split = message.text.split("/")
             else:
-                bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova a scrivere la data separata dal carattere - o /")
+                bot.send_message(message.chat.id, "Qualcosa è andato storto, riprova a scrivere la data separata dal carattere - o / altrimenti assicurati di scrivere la data correttamente inserndo anche lo zero per i giorno con numero singolo (Es: 02-04-2023)")
                 return False
                 
 
