@@ -13,6 +13,14 @@ token = os.getenv("TOKEN")
 
 bot = telebot.TeleBot(token)
 
+with open("./Files/calendar.csv", 'rb') as new_file:
+    list = new_file.read().decode('utf8')
+global new_list
+new_list = []
+for item in str(list).split("\n"):
+    new_list.append(item.split(";"))
+print("calendar loaded")
+
 def log(message):
     print(message)
     log_path = "./Files/log_activities.log"
@@ -31,15 +39,6 @@ def is_date(string, fuzzy=False):
 
     except ValueError:
         return False
-    
-def load_calendar():
-    with open("./Files/calendar.csv", 'rb') as new_file:
-        list = new_file.read().decode('utf8')
-    global new_list
-    new_list = []
-    for item in str(list).split("\n"):
-        new_list.append(item.split(";"))
-    print("loaded")
 
 def search_date(date, message):
     for el in new_list:
@@ -53,8 +52,6 @@ def search_date(date, message):
 def handle_command(message):
     if message.text == '/start':
         # set_user(message.from_user.username, message.from_user.id) # crea l'utenza
-        print(message.from_user.id)
-        load_calendar()
         log(f'Message | Username: {message.from_user.username}, User_Id: {message.from_user.id}, Text: {str(message.text)}')
         bot.send_message(message.chat.id, "Ciao!\nSono Segretob, il tuo segretario digitale.\nAl momento è possibile confrontare un solo calendario gestito da remoto, ma sto lavorando per fare in modo che al più presto potrai gestire il calendario che preferisci.\n\nDigita:\n\n/today per il programma di oggi\n/tomorrow per il programma di domani.\n<b>dd-mm-yyyy</b> per il programma del giorno che vuoi.", parse_mode='HTML')
 
