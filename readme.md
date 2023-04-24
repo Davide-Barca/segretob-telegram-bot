@@ -5,6 +5,9 @@ pip install python-dotenv
 pip install pyTelegrambotAPI
 pip install python-dateutil
 pip install parse
+
+sudo locale-gen it_IT
+sudo locale-gen it_IT@euro
 ```
 
 ## Setup
